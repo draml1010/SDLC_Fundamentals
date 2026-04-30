@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +62,40 @@ class TaskServiceTest {
     }
 
     @Test
+    void findById_returnsTask() {
+        Task task = taskWithId(1L, "Found");
+        when(repository.findById(1L)).thenReturn(Optional.of(task));
+
+        TaskResponse result = service.findById(1L);
+
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getTitle()).isEqualTo("Found");
+    }
+
+    @Test
+    void update_updatesAndReturnsTask() {
+        Task existing = taskWithId(1L, "Old Title");
+        when(repository.findById(1L)).thenReturn(Optional.of(existing));
+        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskRequest req = request("New Title");
+        req.setStatus(TaskStatus.IN_PROGRESS);
+        TaskResponse result = service.update(1L, req);
+
+        assertThat(result.getTitle()).isEqualTo("New Title");
+        assertThat(result.getStatus()).isEqualTo(TaskStatus.IN_PROGRESS);
+    }
+
+    @Test
+    void update_throwsWhenNotFound() {
+        when(repository.findById(42L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.update(42L, request("X")))
+                .isInstanceOf(TaskNotFoundException.class);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void delete_throwsWhenNotFound() {
         when(repository.findById(5L)).thenReturn(Optional.empty());
 
@@ -69,12 +104,21 @@ class TaskServiceTest {
         verify(repository, never()).deleteById(any());
     }
 
+    @Test
+    void delete_deletesWhenFound() {
+        Task task = taskWithId(3L, "To Delete");
+        when(repository.findById(3L)).thenReturn(Optional.of(task));
+
+        service.delete(3L);
+
+        verify(repository).deleteById(3L);
+    }
+
     private Task taskWithId(Long id, String title) {
         Task t = new Task();
         t.setTitle(title);
         t.setStatus(TaskStatus.TODO);
-        // id is auto-generated; set via reflection would be needed for real id,
-        // but for response mapping we rely on the saved entity returned by mock
+        ReflectionTestUtils.setField(t, "id", id);
         return t;
     }
 

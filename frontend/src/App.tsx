@@ -54,8 +54,12 @@ export default function App() {
 
   async function handleDelete(id: number) {
     if (!confirm('Delete this task?')) return;
-    await tasksApi.delete(id);
-    setTasks(ts => ts.filter(t => t.id !== id));
+    try {
+      await tasksApi.delete(id);
+      setTasks(ts => ts.filter(t => t.id !== id));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to delete task');
+    }
   }
 
   return (

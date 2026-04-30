@@ -10,25 +10,9 @@ The focus is not only on the technical result but also on:
 - where the AI is challenged or corrected
 - reflective evaluation of AI contributions
 
-# Project Context
+## Project Context
 This project evaluates the SNCF PKI Hybrid RFP.
 
-# Authoritative Documents
-<!-- Dies Abschnitt ist ein Test
-- docs/rfp/RFP_Main.pdf (primary source, always authoritative)
-- docs/contracts/SoW_Draft.docx
-- docs/architecture/Target_Architecture.vsdx
-
-# Rules
-- If information conflicts: RFP_Main.pdf wins
-- Ignore drafts unless explicitly referenced
-- Summaries must be client-ready (executive tone)
-
-# Output Expectations
-- Structured tables
-- Clear assumptions
-- Explicit risks and mitigations
- -->
 ---
 
 ## Tech Stack
@@ -67,13 +51,17 @@ This project evaluates the SNCF PKI Hybrid RFP.
 | PUT    | /{id}      | Update task       | 200 / 404     |
 | DELETE | /{id}      | Delete task       | 204 / 404     |
 
+### Error Response Shapes
+- **404**: `{ "error": "Task not found: {id}" }`
+- **400**: `{ "fieldName": "validation message", ... }` (field map)
+
 ### Frontend Features
 - Task list view
 - Create / Edit / Delete task via modal
 - Status badge (color-coded)
 - Optional due date
 - Client-side + server-side validation
-- Error display with retry
+- Server error surfaced as inline form banner (create/update) or page banner (delete/load)
 
 ---
 
@@ -84,6 +72,8 @@ SDLC_Fundamentals/
 ├── CLAUDE.md
 ├── README.md
 ├── AI_USAGE.md
+├── EXECUTIVE_SUMMARY.md
+├── REFLECTION.md
 ├── backend/
 │   ├── pom.xml
 │   ├── mvnw.cmd
@@ -104,7 +94,9 @@ SDLC_Fundamentals/
 │       │   │       └── GlobalExceptionHandler.java
 │       │   └── resources/application.properties
 │       └── test/
-│           └── java/com/example/taskmanager/service/TaskServiceTest.java
+│           └── java/com/example/taskmanager/
+│               ├── service/TaskServiceTest.java     ← 8 unit tests (Mockito)
+│               └── controller/TaskControllerTest.java ← 7 slice tests (@WebMvcTest)
 └── frontend/
     ├── vite.config.ts          ← proxy /api → localhost:8080
     └── src/
@@ -133,6 +125,7 @@ SDLC_Fundamentals/
 | API layer | Centralised `tasksApi` module | Single place for base URL, headers, and error handling |
 | CORS | Vite proxy (`/api` → `:8080`) | No CORS headers needed in dev; backend stays unaware of frontend origin |
 | Validation | Bean Validation on DTO + client-side pre-check | Server is authoritative; client validation is UX only |
+| Error parsing | `handleResponse` detects both `{ error }` and field-map shapes | Backend returns different shapes for 404 vs 400; frontend handles both |
 
 ---
 
@@ -192,53 +185,62 @@ The AI does NOT act as:
 | 2. Backend Implementation      | Done | Spring Boot CRUD API with validation and error handling |
 | 3. Frontend Implementation     | Done | React + Vite + Tailwind, full CRUD UI |
 | 4. Integration & CORS          | Done | Vite proxy eliminates CORS in dev |
-| 5. Error Handling & Validation | In Progress | Server errors surfaced in UI; further polish pending |
-| 6. Testing                     | Pending | Unit tests scaffolded (TaskServiceTest); more needed |
-| 7. Documentation               | In Progress | README + AI_USAGE.md exist; API docs pending |
-| 8. Reflection on AI Usage      | Pending | To be completed at project end |
+| 5. Error Handling & Validation | Done | Server errors surfaced in UI; field-map parsing fixed |
+| 6. Testing                     | Done | 15 backend tests (service unit + controller slice) |
+| 7. Documentation               | Done | README, AI_USAGE.md, EXECUTIVE_SUMMARY.md complete |
+| 8. Reflection on AI Usage      | Done | REFLECTION.md complete |
 
 ---
 
-## Testing Strategy
+## Testing
 
-### Backend
-- Unit tests for service layer (`TaskServiceTest` — Mockito)
-- Validation tests for REST endpoints (pending)
+### Backend (15 tests, all passing)
+
+**`TaskServiceTest`** — 8 unit tests (Mockito)
+- `findAll_returnsAllTasks`
+- `findById_returnsTask`
+- `findById_throwsWhenNotFound`
+- `create_savesAndReturnsTask`
+- `update_updatesAndReturnsTask`
+- `update_throwsWhenNotFound`
+- `delete_deletesWhenFound`
+- `delete_throwsWhenNotFound`
+
+**`TaskControllerTest`** — 7 slice tests (`@WebMvcTest`)
+- `getAll_returnsOk`
+- `create_validRequest_returns201`
+- `create_blankTitle_returns400WithFieldError`
+- `create_titleTooLong_returns400`
+- `getById_notFound_returns404`
+- `update_notFound_returns404`
+- `delete_notFound_returns404`
 
 ### Frontend
-- Basic component tests (pending)
-- Manual integration testing (in progress)
+Manual integration testing. Automated component tests are out of scope for this exercise.
 
-AI proposes tests; test relevance and correctness are reviewed manually.
+Run backend tests:
+```bash
+cd backend
+mvn test
+```
 
 ---
 
 ## Documentation
-The AI supports:
-- README.md creation
-- API documentation
-- Inline code comments
-
-All documentation is reviewed for correctness and clarity.
-
----
-
-## Reflection & Critical Evaluation
-Throughout development, note:
-- Where the AI accelerated development
-- Where AI suggestions were incomplete or misleading
-- What required human correction
-
-A final reflection will summarize:
-- Benefits of agentic AI
-- Limitations observed
-- Lessons learned
+| File | Contents |
+|---|---|
+| `README.md` | Project overview, API reference, running instructions, architecture notes |
+| `AI_USAGE.md` | Phase-by-phase prompt/intervention log |
+| `EXECUTIVE_SUMMARY.md` | Executive-level summary of outcomes and AI usage |
+| `REFLECTION.md` | Developer's personal reflection on the agentic AI collaboration |
+| `CLAUDE.md` | This file — authoritative project configuration for the AI |
 
 ---
 
 ## Deliverables
-- Git repository with full source code
-- README.md
-- This CLAUDE.md
-- AI_USAGE.md with prompt/intervention log
-- Reflection section on agent usage
+- [x] Git repository with full source code
+- [x] README.md
+- [x] CLAUDE.md
+- [x] AI_USAGE.md with prompt/intervention log
+- [x] EXECUTIVE_SUMMARY.md
+- [x] REFLECTION.md with developer reflection on AI usage

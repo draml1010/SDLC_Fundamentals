@@ -12,6 +12,7 @@ const emptyForm: TaskRequest = { title: '', description: '', status: 'TODO', due
 export function TaskForm({ initial, onSubmit, onCancel }: Props) {
   const [form, setForm] = useState<TaskRequest>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof TaskRequest, string>>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export function TaskForm({ initial, onSubmit, onCancel }: Props) {
       setForm(emptyForm);
     }
     setErrors({});
+    setSubmitError(null);
   }, [initial]);
 
   function validate(): boolean {
@@ -41,12 +43,15 @@ export function TaskForm({ initial, onSubmit, onCancel }: Props) {
     evt.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
+    setSubmitError(null);
     try {
       await onSubmit({
         ...form,
         description: form.description || undefined,
         dueDate: form.dueDate || undefined,
       });
+    } catch (e: unknown) {
+      setSubmitError(e instanceof Error ? e.message : 'Save failed');
     } finally {
       setSubmitting(false);
     }
@@ -103,6 +108,10 @@ export function TaskForm({ initial, onSubmit, onCancel }: Props) {
           />
         </div>
       </div>
+
+      {submitError && (
+        <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-md px-3 py-2">{submitError}</p>
+      )}
 
       <div className="flex justify-end gap-2 pt-2">
         <button
