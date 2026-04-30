@@ -1,0 +1,10 @@
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\dto\TaskRequest.java
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\dto\TaskResponse.java
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\exception\GlobalExceptionHandler.java
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\model\TaskStatus.java
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\service\TaskService.java
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\model\Task.java
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\TaskManagerApplication.java
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\controller\TaskController.java
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\exception\TaskNotFoundException.java
+C:\projects\SDLC_Fundamentals\backend\src\main\java\com\example\taskmanager\repository\TaskRepository.java
